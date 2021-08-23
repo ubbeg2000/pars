@@ -191,6 +191,58 @@ func (d DOMNode) String() string {
 	return retval
 }
 
+func (d DOMNode) Traverse(cb func(el Element)) {
+	var f func(node DOMNode)
+
+	f = func(node DOMNode) {
+		if len(node.Children) == 0 {
+			cb(node)
+		} else {
+			for _, c := range node.Children {
+				f(*c)
+			}
+		}
+	}
+
+	f(d)
+}
+
+func (d DOMNode) GetElementByID(id string) *DOMNode {
+	var retval *DOMNode = nil
+
+	d.Traverse(func(el Element) {
+		if el.GetAttributes()["id"] == id {
+			retval = el.(*DOMNode)
+		}
+	})
+
+	return retval
+}
+
+func (d DOMNode) GetElementsByTagName(tag string) []*DOMNode {
+	var retval []*DOMNode = make([]*DOMNode, 0)
+
+	d.Traverse(func(el Element) {
+		if el.GetTagName() == tag {
+			retval = append(retval, el.(*DOMNode))
+		}
+	})
+
+	return retval
+}
+
+func (d DOMNode) GetElementsByClassName(class string) []*DOMNode {
+	var retval []*DOMNode = make([]*DOMNode, 0)
+
+	d.Traverse(func(el Element) {
+		if strings.Contains(el.GetAttributes()["class"], class) {
+			retval = append(retval, el.(*DOMNode))
+		}
+	})
+
+	return retval
+}
+
 func (d *DOMNode) AppendChild(nd *DOMNode) {
 	d.Children = append(d.Children, nd)
 }
