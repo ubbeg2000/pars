@@ -1,6 +1,6 @@
 # pars
 
-a simple html parser for go
+a simple html parser for go, built around [golang.org/x/net/html](golang.org/x/net/html)
 
 ## Installation
 
