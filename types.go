@@ -212,7 +212,9 @@ func (d DOMNode) GetElementByID(id string) *DOMNode {
 
 	d.Traverse(func(el Element) {
 		if el.GetAttributes()["id"] == id {
-			retval = el.(*DOMNode)
+			if n, ok := el.(DOMNode); ok {
+				retval = &n
+			}
 		}
 	})
 
@@ -224,7 +226,9 @@ func (d DOMNode) GetElementsByTagName(tag string) []*DOMNode {
 
 	d.Traverse(func(el Element) {
 		if el.GetTagName() == tag {
-			retval = append(retval, el.(*DOMNode))
+			if n, ok := el.(DOMNode); ok {
+				retval = append(retval, &n)
+			}
 		}
 	})
 
@@ -236,7 +240,9 @@ func (d DOMNode) GetElementsByClassName(class string) []*DOMNode {
 
 	d.Traverse(func(el Element) {
 		if strings.Contains(el.GetAttributes()["class"], class) {
-			retval = append(retval, el.(*DOMNode))
+			if n, ok := el.(DOMNode); ok {
+				retval = append(retval, &n)
+			}
 		}
 	})
 
