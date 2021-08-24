@@ -14,50 +14,60 @@ func NewLinearParser() LinearParser {
 }
 
 func (lp *LinearParser) Parse(res io.Reader) LinearDOM {
-	var domElements []LinearDOMElement = make([]LinearDOMElement, 0)
-	var newDom *LinearDOMElement
-	var done bool = false
+	var (
+		domElements []LinearDOMElement = make([]LinearDOMElement, 0)
+		newDom      *LinearDOMElement  = nil
+		// prevDom     *LinearDOMElement  = nil
+		done bool = false
+	)
 
 	z := html.NewTokenizer(res)
 
 	for {
-		tt := z.Next()
+		tokenType := z.Next()
 
 		if done {
 			break
 		}
 
-		switch tt {
-		case html.StartTagToken, html.SelfClosingTagToken:
+		switch tokenType {
+		case html.StartTagToken:
 			t, _ := z.TagName()
 			tn := string(t)
 
-			if newDom != nil {
-				domElements = append(domElements, *newDom)
-				newDom = nil
-			}
-
 			newDom = new(LinearDOMElement)
 			newDom.TagName = tn
-			newDom.SelfEnclosed = tt == html.SelfClosingTagToken
+			newDom.SelfEnclosed = tokenType == html.SelfClosingTagToken
 			newDom.Attributes = ParseAttributes(z)
 			newDom.Text = ""
 
-			if tt == html.SelfClosingTagToken {
-				domElements = append(domElements, *newDom)
-				newDom = nil
-			}
+			domElements = append(domElements, *newDom)
+
+		case html.SelfClosingTagToken:
+			t, _ := z.TagName()
+			tn := string(t)
+
+			newDom = new(LinearDOMElement)
+			newDom.TagName = tn
+			newDom.SelfEnclosed = tokenType == html.SelfClosingTagToken
+			newDom.Attributes = ParseAttributes(z)
+			newDom.Text = ""
+
+			domElements = append(domElements, *newDom)
 
 		case html.TextToken:
-			if newDom != nil {
-				newDom.Text = strings.TrimSpace(string(z.Text()))
+			txt := strings.TrimSpace(string(z.Text()))
+			if len(txt) > 0 {
+				newDom = new(LinearDOMElement)
+				newDom.TagName = ""
+				newDom.SelfEnclosed = true
+				newDom.Text = txt
+
+				domElements = append(domElements, *newDom)
 			}
 
 		case html.EndTagToken:
-			if newDom != nil {
-				domElements = append(domElements, *newDom)
-				newDom = nil
-			}
+			newDom = nil
 
 		case html.ErrorToken:
 			done = true

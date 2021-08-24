@@ -92,8 +92,6 @@ func (dp *DOMParser) Parse(reader io.Reader) DOM {
 					newDom.SelfEnclosed = true
 
 					parentDom.AppendChild(newDom)
-
-					dom.RegisterToMaps(newDom)
 				}
 			}
 

@@ -10,8 +10,8 @@ func TestLinearDOMTraversal(t *testing.T) {
 		i++
 	})
 
-	if i != 17 {
-		t.Errorf("Traversed %d elements, should be %d\n", i, 17)
+	if i != 21 {
+		t.Errorf("Traversed %d elements, should be %d\n", i, 21)
 	}
 }
 
@@ -31,7 +31,7 @@ func TestLinearDOMByClassSearch(t *testing.T) {
 
 func TestLinearDOMByIDSearch(t *testing.T) {
 	res := ldom.GetElementByID("an-id")
-	if res.TagName != "div" || res.Text != "div with id" {
+	if res.TagName != "div" {
 		t.Error("failed to search id")
 	}
 }
