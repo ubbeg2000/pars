@@ -1,6 +1,7 @@
 package pars
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"testing"
@@ -23,6 +24,10 @@ func TestMain(m *testing.M) {
 
 	reader, _ = os.Open("./test/index.html")
 	ldom = lp.Parse(reader)
+
+	ldom.Traverse(func(el Element) {
+		fmt.Println(el)
+	})
 
 	m.Run()
 }

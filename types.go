@@ -64,19 +64,25 @@ func (d LinearDOMElement) GetText() string {
 }
 
 func (d LinearDOMElement) String() string {
-	retval := fmt.Sprintf("<%s", d.TagName)
+	var retval string = ""
 
-	for key, value := range d.Attributes {
-		retval += fmt.Sprintf(" %s=\"%s\"", key, value)
-	}
+	if d.TagName != "" {
+		retval = fmt.Sprintf("<%s", d.TagName)
 
-	if d.SelfEnclosed {
-		retval += "/>"
+		for key, value := range d.Attributes {
+			retval += fmt.Sprintf(" %s=\"%s\"", key, value)
+		}
+
+		if d.SelfEnclosed {
+			retval += "/>"
+		} else {
+			retval += fmt.Sprintf(">%s</%s>", d.Text, d.TagName)
+		}
+
+		return retval
 	} else {
-		retval += fmt.Sprintf(">%s</%s>", d.Text, d.TagName)
+		return d.Text
 	}
-
-	return retval
 }
 
 func (ld LinearDOM) Traverse(cb func(el Element)) {

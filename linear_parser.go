@@ -60,7 +60,7 @@ func (lp *LinearParser) Parse(res io.Reader) LinearDOM {
 			if len(txt) > 0 {
 				newDom = new(LinearDOMElement)
 				newDom.TagName = ""
-				newDom.SelfEnclosed = true
+				newDom.SelfEnclosed = false
 				newDom.Text = txt
 
 				domElements = append(domElements, *newDom)
