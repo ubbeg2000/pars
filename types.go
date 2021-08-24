@@ -133,12 +133,9 @@ func (d DOM) Traverse(cb func(el Element)) {
 	var f func(node DOMNode)
 
 	f = func(node DOMNode) {
-		if len(node.Children) == 0 {
-			cb(node)
-		} else {
-			for _, c := range node.Children {
-				f(*c)
-			}
+		cb(node)
+		for _, c := range node.Children {
+			f(*c)
 		}
 	}
 
@@ -172,7 +169,15 @@ func (d DOMNode) GetAttributes() map[string]string {
 }
 
 func (d DOMNode) GetText() string {
-	return d.Text
+	var retval string = ""
+
+	for _, c := range d.Children {
+		if c.TagName == "" && c.Text != "" {
+			retval += fmt.Sprintf(" %s", c.Text)
+		}
+	}
+
+	return strings.TrimSpace(retval)
 }
 
 func (d DOMNode) String() string {
@@ -185,7 +190,7 @@ func (d DOMNode) String() string {
 	if d.SelfEnclosed {
 		retval += "/>"
 	} else {
-		retval += fmt.Sprintf(">%s</%s>", d.Text, d.TagName)
+		retval += fmt.Sprintf(">%s</%s>", d.GetText(), d.TagName)
 	}
 
 	return retval
@@ -195,12 +200,9 @@ func (d DOMNode) Traverse(cb func(el Element)) {
 	var f func(node DOMNode)
 
 	f = func(node DOMNode) {
-		if len(node.Children) == 0 {
-			cb(node)
-		} else {
-			for _, c := range node.Children {
-				f(*c)
-			}
+		cb(node)
+		for _, c := range node.Children {
+			f(*c)
 		}
 	}
 
@@ -253,34 +255,37 @@ func (d *DOMNode) AppendChild(nd *DOMNode) {
 	d.Children = append(d.Children, nd)
 }
 
-func (d *DOMNode) Render() string {
+func (d DOMNode) Render() string {
 	var f func(node DOMNode, gap string) string
+
 	f = func(node DOMNode, gap string) string {
-		retval := fmt.Sprintf("%s<%s", gap, d.TagName)
+		var retval string = ""
 
-		for key, value := range d.Attributes {
-			retval += fmt.Sprintf(" %s=\"%s\"", key, value)
-		}
+		if node.TagName != "" {
+			retval = fmt.Sprintf("%s<%s", gap, node.TagName)
 
-		if d.SelfEnclosed {
-			retval += "/>\n"
-		} else {
-			retval += ">\n"
-
-			for _, c := range d.Children {
-				retval += f(*c, gap+"  ")
+			for key, value := range node.Attributes {
+				retval += fmt.Sprintf(" %s=\"%s\"", key, value)
 			}
 
-			if len(d.Text) > 0 {
-				retval += fmt.Sprintf("%s  %s\n%s</%s>\n", gap, d.Text, gap, d.TagName)
+			if node.SelfEnclosed {
+				retval += "/>\n"
 			} else {
-				retval += fmt.Sprintf("%s</%s>\n", gap, d.TagName)
+				retval += ">\n"
+
+				for _, c := range node.Children {
+					retval += f(*c, gap+"  ")
+				}
+
+				retval += fmt.Sprintf("%s</%s>\n", gap, node.TagName)
 			}
 
+		} else {
+			retval = fmt.Sprintf("%s%s\n", gap, node.Text)
 		}
 
 		return retval
 	}
 
-	return f(*d, "  ")
+	return f(d, "")
 }

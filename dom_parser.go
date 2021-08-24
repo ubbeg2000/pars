@@ -14,17 +14,18 @@ func NewDOMParser() DOMParser {
 }
 
 func (dp *DOMParser) Parse(reader io.Reader) DOM {
-	var dom DOM = DOM{
-		Tree:    nil,
-		Ids:     make(map[string]*DOMNode),
-		Classes: make(map[string][]*DOMNode),
-		Tags:    make(map[string][]*DOMNode),
-	}
-
-	var domTree *DOMNode = nil
-	var parentDom *DOMNode = domTree
-	var newDom *DOMNode
-	var done bool = false
+	var (
+		dom DOM = DOM{
+			Tree:    nil,
+			Ids:     make(map[string]*DOMNode),
+			Classes: make(map[string][]*DOMNode),
+			Tags:    make(map[string][]*DOMNode),
+		}
+		domTree   *DOMNode = nil
+		parentDom *DOMNode = domTree
+		newDom    *DOMNode = nil
+		done      bool     = false
+	)
 
 	z := html.NewTokenizer(reader)
 
@@ -39,34 +40,61 @@ func (dp *DOMParser) Parse(reader io.Reader) DOM {
 		case html.DoctypeToken:
 			dom.Doctype = string(z.Raw())
 
-		case html.StartTagToken, html.SelfClosingTagToken:
+		case html.StartTagToken, html.SelfClosingTagToken, html.TextToken:
 			t, _ := z.TagName()
 			tn := string(t)
 			attrs := ParseAttributes(z)
 
-			newDom = new(DOMNode)
-			newDom.TagName = tn
-			newDom.Text = ""
-			newDom.Attributes = attrs
-			newDom.Children = []*DOMNode{}
-			newDom.Parent = parentDom
-			newDom.SelfEnclosed = tokenType == html.SelfClosingTagToken
-
-			dom.RegisterToMaps(newDom)
-
-			if domTree == nil {
-				domTree = newDom
-			} else {
-				parentDom.AppendChild(newDom)
-			}
-
 			if tokenType == html.StartTagToken {
+				newDom = new(DOMNode)
+				newDom.TagName = tn
+				newDom.Text = ""
+				newDom.Attributes = attrs
+				newDom.Children = []*DOMNode{}
+				newDom.Parent = parentDom
+				newDom.SelfEnclosed = false
+
+				if domTree == nil {
+					domTree = newDom
+				} else {
+					parentDom.AppendChild(newDom)
+				}
+
 				parentDom = newDom
+
+				dom.RegisterToMaps(newDom)
 			}
 
-		case html.TextToken:
-			if parentDom != nil {
-				parentDom.Text = strings.TrimSpace(string(z.Text()))
+			if tokenType == html.SelfClosingTagToken {
+				newDom = new(DOMNode)
+				newDom.TagName = tn
+				newDom.Text = ""
+				newDom.Attributes = attrs
+				newDom.Children = []*DOMNode{}
+				newDom.Parent = parentDom
+				newDom.SelfEnclosed = true
+
+				parentDom.AppendChild(newDom)
+
+				dom.RegisterToMaps(newDom)
+			}
+
+			if tokenType == html.TextToken {
+				txt := strings.TrimSpace(string(z.Text()))
+
+				if len(txt) > 0 {
+					newDom = new(DOMNode)
+					newDom.TagName = tn
+					newDom.Text = txt
+					newDom.Attributes = attrs
+					newDom.Children = []*DOMNode{}
+					newDom.Parent = parentDom
+					newDom.SelfEnclosed = true
+
+					parentDom.AppendChild(newDom)
+
+					dom.RegisterToMaps(newDom)
+				}
 			}
 
 		case html.EndTagToken:
