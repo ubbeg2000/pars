@@ -14,14 +14,6 @@ type DOMNode struct {
 	SelfEnclosed bool
 }
 
-func (d DOMNode) GetTagName() string {
-	return d.TagName
-}
-
-func (d DOMNode) GetAttributes() map[string]string {
-	return d.Attributes
-}
-
 func (d DOMNode) GetText() string {
 	var retval string = ""
 
@@ -50,7 +42,7 @@ func (d DOMNode) String() string {
 	return retval
 }
 
-func (d DOMNode) Traverse(cb func(el Element)) {
+func (d DOMNode) Traverse(cb func(el DOMNode)) {
 	var f func(node DOMNode)
 
 	f = func(node DOMNode) {
@@ -66,11 +58,9 @@ func (d DOMNode) Traverse(cb func(el Element)) {
 func (d DOMNode) GetElementByID(id string) *DOMNode {
 	var retval *DOMNode = nil
 
-	d.Traverse(func(el Element) {
-		if el.GetAttributes()["id"] == id {
-			if n, ok := el.(DOMNode); ok {
-				retval = &n
-			}
+	d.Traverse(func(el DOMNode) {
+		if el.Attributes["id"] == id {
+			retval = &el
 		}
 	})
 
@@ -80,11 +70,9 @@ func (d DOMNode) GetElementByID(id string) *DOMNode {
 func (d DOMNode) GetElementsByTagName(tag string) []*DOMNode {
 	var retval []*DOMNode = make([]*DOMNode, 0)
 
-	d.Traverse(func(el Element) {
-		if el.GetTagName() == tag {
-			if n, ok := el.(DOMNode); ok {
-				retval = append(retval, &n)
-			}
+	d.Traverse(func(el DOMNode) {
+		if el.TagName == tag {
+			retval = append(retval, &el)
 		}
 	})
 
@@ -94,10 +82,45 @@ func (d DOMNode) GetElementsByTagName(tag string) []*DOMNode {
 func (d DOMNode) GetElementsByClassName(class string) []*DOMNode {
 	var retval []*DOMNode = make([]*DOMNode, 0)
 
-	d.Traverse(func(el Element) {
-		if strings.Contains(el.GetAttributes()["class"], class) {
-			if n, ok := el.(DOMNode); ok {
-				retval = append(retval, &n)
+	d.Traverse(func(el DOMNode) {
+		if strings.Contains(el.Attributes["class"], class) {
+			retval = append(retval, &el)
+		}
+	})
+
+	return retval
+}
+
+func (d DOMNode) QuerySelector(selector string) []*DOMNode {
+	tagName, id, classList := ParseSelector(selector)
+	retval := make([]*DOMNode, 0)
+	classList = FormatClassList(classList)
+
+	d.Traverse(func(el DOMNode) {
+		var (
+			tn string = tagName
+			i  string = id
+			cl string = classList
+		)
+		elClassList := FormatClassList(el.Attributes["class"])
+
+		if tn == "" {
+			tn = el.TagName
+		}
+
+		if i == "" {
+			i = el.Attributes["id"]
+		}
+
+		if cl == "" {
+			cl = elClassList
+		}
+
+		if tn == el.TagName {
+			if i == el.Attributes["id"] {
+				if cl == elClassList {
+					retval = append(retval, &el)
+				}
 			}
 		}
 	})

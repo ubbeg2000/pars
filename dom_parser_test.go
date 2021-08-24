@@ -6,8 +6,8 @@ import (
 
 func TestDOMTraversal(t *testing.T) {
 	i := 0
-	dom.Traverse(func(el Element) {
-		if el.GetTagName() != "" {
+	dom.Traverse(func(el DOMNode) {
+		if el.TagName != "" {
 			i++
 		}
 	})
@@ -19,8 +19,8 @@ func TestDOMTraversal(t *testing.T) {
 
 func TestDOMNodeTraversal(t *testing.T) {
 	i := 0
-	dom.GetElementByID("dom-node").Traverse(func(el Element) {
-		if el.GetTagName() != "" {
+	dom.GetElementByID("dom-node").Traverse(func(el DOMNode) {
+		if el.TagName != "" {
 			i++
 		}
 	})
@@ -48,5 +48,12 @@ func TestDOMNodeIDSearch(t *testing.T) {
 	res := dom.GetElementsByTagName("body")[0].GetElementByID("an-id")
 	if res.TagName != "div" || res.GetText() != "div with id asdf" {
 		t.Error(res.GetText())
+	}
+}
+
+func TestDOMNodeQuerySelector(t *testing.T) {
+	res := dom.Tree.QuerySelector("div .class1 .class2")
+	if len(res) != 1 {
+		t.Error(len(res))
 	}
 }

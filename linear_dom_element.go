@@ -9,14 +9,6 @@ type LinearDOMElement struct {
 	SelfEnclosed bool
 }
 
-func (d LinearDOMElement) GetTagName() string {
-	return d.TagName
-}
-
-func (d LinearDOMElement) GetAttributes() map[string]string {
-	return d.Attributes
-}
-
 func (d LinearDOMElement) GetText() string {
 	return d.Text
 }

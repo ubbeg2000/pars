@@ -7,18 +7,11 @@ import (
 	"golang.org/x/net/html"
 )
 
-type LinearParser struct{}
-
-func NewLinearParser() LinearParser {
-	return LinearParser{}
-}
-
-func (lp *LinearParser) Parse(res io.Reader) LinearDOM {
+func ParseToLinear(res io.Reader) LinearDOM {
 	var (
-		domElements []LinearDOMElement = make([]LinearDOMElement, 0)
-		newDom      *LinearDOMElement  = nil
-		// prevDom     *LinearDOMElement  = nil
-		done bool = false
+		domElements []*LinearDOMElement = make([]*LinearDOMElement, 0)
+		newDom      *LinearDOMElement   = nil
+		done        bool                = false
 	)
 
 	z := html.NewTokenizer(res)
@@ -41,7 +34,7 @@ func (lp *LinearParser) Parse(res io.Reader) LinearDOM {
 			newDom.Attributes = ParseAttributes(z)
 			newDom.Text = ""
 
-			domElements = append(domElements, *newDom)
+			domElements = append(domElements, newDom)
 
 		case html.SelfClosingTagToken:
 			t, _ := z.TagName()
@@ -53,7 +46,7 @@ func (lp *LinearParser) Parse(res io.Reader) LinearDOM {
 			newDom.Attributes = ParseAttributes(z)
 			newDom.Text = ""
 
-			domElements = append(domElements, *newDom)
+			domElements = append(domElements, newDom)
 
 		case html.TextToken:
 			txt := strings.TrimSpace(string(z.Text()))
@@ -63,7 +56,7 @@ func (lp *LinearParser) Parse(res io.Reader) LinearDOM {
 				newDom.SelfEnclosed = false
 				newDom.Text = txt
 
-				domElements = append(domElements, *newDom)
+				domElements = append(domElements, newDom)
 			}
 
 		case html.EndTagToken:

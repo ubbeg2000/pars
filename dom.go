@@ -22,7 +22,7 @@ func (d DOM) GetElementsByTagName(tag string) []*DOMNode {
 	return d.Tags[tag]
 }
 
-func (d DOM) Traverse(cb func(el Element)) {
+func (d DOM) Traverse(cb func(el DOMNode)) {
 	var f func(node DOMNode)
 
 	f = func(node DOMNode) {
@@ -35,7 +35,7 @@ func (d DOM) Traverse(cb func(el Element)) {
 	f(*d.Tree)
 }
 
-func (d *DOM) Render() string {
+func (d DOM) Render() string {
 	return d.Doctype + "\n" + d.Tree.Render()
 }
 

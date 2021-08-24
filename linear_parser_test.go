@@ -6,7 +6,7 @@ import (
 
 func TestLinearDOMTraversal(t *testing.T) {
 	i := 0
-	ldom.Traverse(func(el Element) {
+	ldom.Traverse(func(el LinearDOMElement) {
 		i++
 	})
 

@@ -7,13 +7,7 @@ import (
 	"golang.org/x/net/html"
 )
 
-type DOMParser struct{}
-
-func NewDOMParser() DOMParser {
-	return DOMParser{}
-}
-
-func (dp *DOMParser) Parse(reader io.Reader) DOM {
+func ParseToDOM(reader io.Reader) DOM {
 	var (
 		dom DOM = DOM{
 			Tree:    nil,
